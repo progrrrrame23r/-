@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشغيل الفلاش</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #flashButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button id="flashButton">تشغيل الكشاف</button>
+
+    <script>
+        const button = document.getElementById('flashButton');
+        let stream = null;
+        let track = null;
+        let isTorchOn = false;
+
+        button.addEventListener('click', async () => {
+            if (isTorchOn) {
+                if (track) {
+                    track.applyConstraints({ advanced: [{ torch: false }] });
+                }
+                button.textContent = 'تشغيل الكشاف';
+                isTorchOn = false;
+            } else {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    track = stream.getVideoTracks()[0];
+                    const capabilities = track.getCapabilities();
+
+                    if (capabilities.torch) {
+                        track.applyConstraints({ advanced: [{ torch: true }] });
+                        button.textContent = 'إيقاف الكشاف';
+                        isTorchOn = true;
+                    } else {
+                        alert('الكشاف غير مدعوم على هذا الجهاز.');
+                    }
+                } catch (error) {
+                    console.error('فشل في الوصول إلى الكاميرا:', error);
+                    alert('حدث خطأ أثناء محاولة تشغيل الكشاف.');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
